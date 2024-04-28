@@ -2,6 +2,8 @@ This web application syncs my meeting data with Google Calendar
 
 Instruction:
 
+The token expiry time is set to 5 minutes. Therefore, when creating an event within this timeframe, users must reauthenticate to Google Calendar before being able to proceed
+
 I'm integrating the Google Calendar API into my web application using OAuth client ID. Please provide the OAuth client ID, secret ID, and redirect URL as per the instructions
 
 Example:
