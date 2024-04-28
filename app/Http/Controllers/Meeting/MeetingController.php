@@ -19,6 +19,13 @@ class MeetingController extends Controller
     {
         $this->googleCalendarService = $googleCalendarService;
     }
+
+    public function index()
+    {
+        $meetings = meetings::where(['creator_id' => auth()->id()])->paginate(3);
+        return view('home', ['meetings' => $meetings]);
+    }
+
     public function store(Request $request)
     {
         try {
@@ -57,15 +64,15 @@ class MeetingController extends Controller
 
             return redirect()->route('home')->with('status', 'Meeting created successfully!');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            return redirect()->route('home')->with('error', 'Meeting creating Failed!');
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
     public function edit($meeting_id)
     {
+
         $meeting = meetings::find($meeting_id);
-        return view('edit', ['meeting' => $meeting]);
+        return view('Meeting.edit', ['meeting' => $meeting]);
     }
 
     public function update(Request $request, $meeting_id)
@@ -74,7 +81,7 @@ class MeetingController extends Controller
             $data = $request->validate([
                 'subject' => 'required|string',
                 'date_time' => 'required|date',
-                'attendees' => 'required|array|max:2',
+                'attendees' => 'array|max:2',
             ]);
 
             $meeting = meetings::find($meeting_id);
@@ -107,29 +114,32 @@ class MeetingController extends Controller
 
             return redirect()->route('home')->with('success', 'Meeting updated successfully');
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            return redirect()->route('home')->with('error', 'Meeting updating Failed!');
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
 
     public function destroy($meeting_id)
     {
-        $meeting = meetings::find($meeting_id);
+        try {
+            $meeting = meetings::find($meeting_id);
 
-        // Check if the current user is the creator of the meeting
-        if ($meeting->creator_id != auth()->id()) {
-            abort(403, 'Unauthorized');
+            // Check if the current user is the creator of the meeting
+            if ($meeting->creator_id != auth()->id()) {
+                abort(403, 'Unauthorized');
+            }
+
+            // Delete event from Google Calendar
+            $this->googleCalendarService->deleteEvent('primary', $meeting->google_event_id);
+
+            // Delete attendees related to the meeting
+            $meeting->attendees()->delete();
+
+            // Delete meeting from local database
+            $meeting->delete();
+
+            return redirect()->route('home')->with('status', 'Meeting deleted successfully');
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
-
-        // Delete event from Google Calendar
-        $this->googleCalendarService->deleteEvent('primary', $meeting->google_event_id);
-
-        // Delete attendees related to the meeting
-        $meeting->attendees()->delete();
-
-        // Delete meeting from local database
-        $meeting->delete();
-
-        return redirect()->route('home')->with('status', 'Meeting deleted successfully');
     }
 }

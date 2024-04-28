@@ -30,16 +30,19 @@ class GoogleCalendarService implements GoogleCalendarServiceInterface
     }
     public function createEvent($calendarId, $event)
     {
+        $this->client->setAccessToken(Session::get('access_token'));
         $service = new \Google_Service_Calendar($this->client);
         return $service->events->insert($calendarId, $event);
     }
     public function updateEvent($calendarId, $eventId, $event)
     {
+        $this->client->setAccessToken(Session::get('access_token'));
         $service = new Google_Service_Calendar($this->client);
         return $service->events->update($calendarId, $eventId, $event);
     }
     public function deleteEvent($calendarId, $eventId)
     {
+        $this->client->setAccessToken(Session::get('access_token'));
         $service = new Google_Service_Calendar($this->client);
         return $service->events->delete($calendarId, $eventId);
     }
