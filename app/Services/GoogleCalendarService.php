@@ -2,17 +2,9 @@
 
 namespace App\Services;
 
-use Carbon\Carbon;
 use Google_Client;
 use Google_Service_Calendar;
-use Google_Service_Calendar_Event;
-use Google_Service_Calendar_EventDateTime;
-use App\Models\meetings;
-use App\Models\meeting_attendees;
-use Auth;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
-use Laravel\Socialite\Facades\Socialite;
 use App\Interfaces\GoogleCalendarServiceInterface;
 
 class GoogleCalendarService implements GoogleCalendarServiceInterface
